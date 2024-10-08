@@ -112,6 +112,50 @@ export const UpdateLecture=async(req,res)=>{
     }
 
 }
+export const UpdateCourse = async (req, res) => {
+    try {
+      const course = await Courses.findById(req.params.id);
+  
+      // Check if the course exists
+      if (!course) {
+        return res.status(404).json({ message: "No Course found" });
+      }
+  
+      // Delete the old image if a new one is uploaded
+      if (req.file && course.image) {
+        rm(course.image, (err) => {
+          if (err) {
+            console.error("Error deleting image:", err);
+          } else {
+            console.log("Image Deleted");
+          }
+        });
+      }
+  
+      // Update course details
+      const { name, description, category, createdBy, duration, price } = req.body;
+      const image = req.file ? req.file.path : course.image;  // Use old image if no new one is uploaded
+  
+      const updatedCourse = await Courses.findByIdAndUpdate(
+        req.params.id,
+        {
+          name,
+          description,
+          category,
+          createdBy,
+          image,  // Updated image or existing image
+          duration,
+          price,
+        },
+        { new: true }  // Return the updated document
+      );
+  
+      res.status(200).json({ message: "Course updated successfully", updatedCourse });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
 export const getAllStats=async(req,res)=>{
     try {
         const totalUsers=(await userModel.find()).length;

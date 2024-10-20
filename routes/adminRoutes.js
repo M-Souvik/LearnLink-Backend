@@ -13,6 +13,5 @@ router.delete("/lecture/:id",isAuth, isAdmin, DeleteLecture);
 router.put("/lecture/edit/:id",isAuth, isAdmin, uploadFiles, UpdateLecture);
 router.get('/stats',isAuth,isAdmin,getAllStats)
 
-
 export default router
 

@@ -14,5 +14,4 @@ const storage = multer.diskStorage({
 
 export const uploadFiles = multer({
     storage
-    // limits: { fileSize: 5 * 1024 * 1024 } // 5 MB limit for file upload
 }).single("file")

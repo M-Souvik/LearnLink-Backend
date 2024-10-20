@@ -1,10 +1,9 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
-// import userModel from '../models/userModel.js'; // Assuming you have a User model
 import express from 'express';
-// import userModel from '../models/userModel.js';
 import Information from '../models/informationModel.js'; // Assuming you have an Information model
 import userModel from '../models/userModel.js';
+import { Courses } from '../models/courseModel.js'; // Assuming you have a Course model
 
 // TOKEN EXPIRY and JWT_SECRET
 const TOKEN_EXPIRY = '7d'; // Token expiry time
@@ -59,34 +58,37 @@ export const login = async (req, res) => {
     }
 
     // Generate a JWT token
-   if (user.role===role){
-    const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
-
-    res.status(200).json({ message: 'Logged in successfully', token: token, user });
-   }else{
-    
-    res.status(404).json({ message: 'Something went wrong' });
-   }
-    
+    if (user.role === role) {
+      const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+      res.status(200).json({ message: 'Logged in successfully', token: token, user });
+    } else {
+      res.status(404).json({ message: 'Something went wrong' });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
-export const profile=async(req,res)=>{
+
+export const profile = async (req, res) => {
   try {
-    const data= await userModel.findById(req.params.id);  
-    console.log(data);
-    res.status(200).json({data})
+    const user = await userModel.findById(req.params.id).populate({
+      path: 'subscription',
+      select: 'id name'
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ user });
   } catch (error) {
-    res.status(500).json({message: 'ERROR FETCHING PROFILE'})
+    console.error(error);
+    res.status(500).json({ message: 'ERROR FETCHING PROFILE' });
   }
- 
-}
+};
 
 // Update profile controller
 export const updateProfile = async (req, res) => {
-  const { username, email, role } = req.body;
+  const { username, email } = req.body;
 
   try {
     // Find the user by ID
@@ -98,7 +100,6 @@ export const updateProfile = async (req, res) => {
     // Update the user
     user.username = username || user.username;
     user.email = email || user.email;
-    user.role = role || user.role;
 
     await user.save();
 
@@ -116,7 +117,7 @@ export const logout = (req, res) => {
 
 // Controller for posting information data
 export const postInformation = async (req, res) => {
-  const userId=req.params.id
+  const userId = req.params.id
   const { preferences, dob, studyingIn, phone } = req.body;
 
   try {

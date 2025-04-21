@@ -13,10 +13,7 @@ export const instance=new Razorpay({
 
 const app=express();
 
-app.use(cors({
-    origin: 'http://localhost:3000', // Allow the frontend (Next.js) to make requests to the backend
-    credentials: true,  // Allow sending cookies in CORS requests
-  }));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
